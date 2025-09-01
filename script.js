@@ -130,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return {
                 name: row.querySelector('.city-name').value,
-                // campaignPeriod: row.querySelector('.campaign-period').value, // Removido
                 accountsReached: parseInt(row.querySelector('.accounts-reached').value) || 0,
                 profileVisits: parseInt(row.querySelector('.profile-visits').value) || 0,
                 costPerVisit: parseFloat(row.querySelector('.cost-per-visit').value) || 0,
@@ -360,19 +359,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carregar dados ao iniciar (se existirem) ou popular com as cidades iniciais
     loadData();
-});```
-
----
-
-### Como usar (mesmo processo):
-
-1.  **Crie uma nova pasta** no seu computador.
-2.  Dentro dessa pasta, crie três arquivos e salve o código correspondente em cada um:
-    *   `index.html`
-    *   `style.css`
-    *   `script.js`
-3.  **Abra o arquivo `index.html`** no seu navegador (Chrome, Firefox, Edge, etc.).
-
-Agora a planilha deve estar com as cidades na ordem correta, sem a coluna "Período Campanha", com o período de análise no título atualizado e com os ajustes de largura para melhor visibilidade. O PDF também refletirá essas mudanças.
-
-Por favor, teste novamente e me diga se há mais algum ajuste!
+});
