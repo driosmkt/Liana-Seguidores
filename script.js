@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadDataBtn = document.getElementById('load-data-btn');
     const generatePdfBtn = document.getElementById('generate-pdf-btn');
     const periodDisplay = document.getElementById('period-display'); // Agora é um span
+    const mainTitle = document.getElementById('main-title'); // Novo: Título principal
+    const reportContentForPdf = document.getElementById('report-content-for-pdf'); // Elemento a ser capturado por html2canvas
     const tableHeaders = document.querySelectorAll('th.sortable');
 
     let citiesData = [];
@@ -141,8 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         localStorage.setItem('citiesData', JSON.stringify(citiesData));
-        // O período não é mais salvo pois é fixo, mas podemos salvar se for editável no futuro
-        // localStorage.setItem('periodOfAnalysis', periodDisplay.textContent); 
         alert('Dados salvos com sucesso!');
     }
 
@@ -156,21 +156,15 @@ document.addEventListener('DOMContentLoaded', () => {
             citiesData.forEach(city => addCityRow(city));
             alert('Dados carregados com sucesso!');
         } else {
-            alert('Nenhum dado salvo encontrado.');
-            // Se não houver dados salvos, carrega as cidades iniciais
+            // Se não houver dados salvos, popula com as cidades iniciais
             tableBody.innerHTML = '';
             initialCities.forEach(city => addCityRow(city));
+            alert('Nenhum dado salvo encontrado. Cidades iniciais carregadas.');
         }
-
-        // O período de análise é fixo agora, não precisa carregar do localStorage
-        // const savedPeriod = localStorage.getItem('periodOfAnalysis');
-        // if (savedPeriod) {
-        //     periodDisplay.textContent = savedPeriod;
-        // }
     }
 
     // Função de ordenação
-    function sortTable(sortKey, type) {
+    function sortTable(sortKey) {
         const rows = Array.from(tableBody.querySelectorAll('tr'));
         const table = document.getElementById('leads-table');
         const headerIndex = Array.from(table.tHead.querySelector('tr').children).findIndex(th => th.dataset.sort === sortKey);
@@ -238,19 +232,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Salva os dados antes de gerar o PDF para garantir que o conteúdo está atualizado
         saveData();
 
-        const content = document.getElementById('pdf-content');
-        const originalBgBody = document.body.style.backgroundColor;
-        const originalBgContainer = content.style.backgroundColor;
-        const originalColorContainer = content.style.color;
-        const originalColorPeriod = periodDisplay.style.color;
+        const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' para retrato, 'mm' para unidades, 'a4' para tamanho
+        let yPos = 15; // Posição Y inicial para o conteúdo
 
-        // Estilos temporários para o PDF
-        document.body.style.backgroundColor = 'white';
-        content.style.backgroundColor = 'white';
-        content.style.color = 'black';
-        periodDisplay.style.color = 'black';
+        // Adiciona o título principal
+        pdf.setFontSize(22);
+        pdf.setTextColor(217, 148, 10); // Cor Gold/Orange (D9940A)
+        pdf.text(mainTitle.textContent, 105, yPos, { align: 'center' });
+        yPos += 10; // Espaço após o título
 
-        // Oculta botões e a coluna de ações para o PDF
+        // Adiciona o período de análise
+        pdf.setFontSize(14);
+        pdf.setTextColor(0, 0, 0); // Preto
+        pdf.text(`Período de Análise: ${periodDisplay.textContent}`, 105, yPos, { align: 'center' });
+        yPos += 20; // Espaço após o período e antes da tabela
+
+        // Oculta botões e a coluna de ações para a captura da tabela
         const controlsDiv = document.querySelector('.controls');
         controlsDiv.style.display = 'none';
         const actionHeader = document.querySelector('th:last-child');
@@ -258,35 +255,40 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionCells = document.querySelectorAll('td:last-child');
         actionCells.forEach(cell => cell.style.display = 'none');
 
-        // Garante que os inputs são renderizados como texto para o PDF
-        const inputsToConvert = content.querySelectorAll('input');
+        // Garante que os inputs são renderizados como texto e com cores legíveis no PDF
+        const inputsToConvert = reportContentForPdf.querySelectorAll('input');
         inputsToConvert.forEach(input => {
-            input.setAttribute('value', input.value); // Garante que o valor atual está no atributo 'value'
-            input.style.border = 'none'; // Remove bordas
-            input.style.backgroundColor = 'transparent'; // Remove background
-            input.style.color = 'black'; // Garante texto preto no PDF
-            input.style.minWidth = '0'; // Evita largura mínima que force scroll
+            input.setAttribute('value', input.value); 
+            input.style.border = 'none'; 
+            input.style.backgroundColor = 'transparent'; 
+            input.style.color = 'black'; // Temporariamente preto para o PDF
+            input.style.minWidth = '0'; 
+
+            // Aplica cor de texto para os Seguidores Novos baseado na cor de fundo original
+            if (input.classList.contains('new-followers')) {
+                 if (input.classList.contains('positive-change') || input.classList.contains('negative-change')) {
+                    input.style.color = 'white'; // Texto branco se o fundo for verde/vermelho
+                } else if (input.classList.contains('no-change')) {
+                    input.style.color = 'black'; // Texto preto se o fundo for amarelo
+                } else {
+                    input.style.color = 'black'; // Padrão preto para outros casos
+                }
+            }
         });
         
-        // Captura o conteúdo
-        const canvas = await html2canvas(content, { 
-            scale: 2, // Melhor qualidade
-            useCORS: true, // Se houver imagens externas
-            windowWidth: content.scrollWidth,
-            windowHeight: content.scrollHeight,
+        // Captura apenas o container da tabela e dos controles (sem os botões de controle)
+        // Usamos reportContentForPdf para englobar a tabela e seus estilos
+        const canvas = await html2canvas(reportContentForPdf, { 
+            scale: 2, 
+            useCORS: true, 
+            windowWidth: reportContentForPdf.scrollWidth,
+            windowHeight: reportContentForPdf.scrollHeight,
             onclone: (documentClone) => {
-                const clonedContent = documentClone.getElementById('pdf-content');
-                
-                // Aplica estilos para o clone para garantir o layout correto no PDF
-                documentClone.body.style.backgroundColor = 'white';
-                clonedContent.style.backgroundColor = 'white';
-                clonedContent.style.color = 'black';
-                
-                const clonedPeriodDisplay = documentClone.getElementById('period-display');
-                if (clonedPeriodDisplay) clonedPeriodDisplay.style.color = 'black';
-
-                const clonedH1 = documentClone.querySelector('h1');
-                if (clonedH1) clonedH1.style.color = '#DC2626'; // Mantém o título vermelho
+                const clonedContent = documentClone.getElementById('report-content-for-pdf');
+                if (clonedContent) {
+                    clonedContent.style.backgroundColor = 'white';
+                    clonedContent.style.color = 'black'; // Garante texto preto no container
+                }
 
                 const clonedControlsDiv = documentClone.querySelector('.controls');
                 if (clonedControlsDiv) clonedControlsDiv.style.display = 'none';
@@ -302,30 +304,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     input.style.backgroundColor = 'transparent';
                     input.style.color = 'black';
                     input.style.minWidth = '0';
-                });
 
-                // Assegura que as cores condicionais sejam mantidas, mas o texto seja preto ou branco legível
-                const clonedNewFollowersInputs = clonedContent.querySelectorAll('.new-followers');
-                clonedNewFollowersInputs.forEach(input => {
-                    if (input.classList.contains('positive-change') || input.classList.contains('negative-change')) {
-                        input.style.color = 'white'; // Se o background for verde/vermelho, texto branco
-                    } else if (input.classList.contains('no-change')) {
-                        input.style.color = 'black'; // Se o background for amarelo, texto preto
+                    if (input.classList.contains('new-followers')) {
+                        if (input.classList.contains('positive-change') || input.classList.contains('negative-change')) {
+                            input.style.color = 'white';
+                        } else if (input.classList.contains('no-change')) {
+                            input.style.color = 'black';
+                        } else {
+                            input.style.color = 'black';
+                        }
                     }
                 });
 
-                // Esconde a barra de rolagem horizontal se ainda aparecer no clone
-                const clonedTableContainer = clonedContent.querySelector('.table-container');
-                if (clonedTableContainer) clonedTableContainer.style.overflowX = 'hidden';
-
-                // Força a largura da tabela para o clone
-                const clonedTable = clonedContent.querySelector('#leads-table');
-                if (clonedTable) clonedTable.style.width = '100%';
+                // Assegura que o background do body no clone é branco
+                documentClone.body.style.backgroundColor = 'white';
             }
         });
 
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 200; // Largura para a imagem da tabela (ajustado para caber no A4 com margens)
+        const pageHeight = 297; 
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let heightLeft = imgHeight;
+
+        pdf.addImage(imgData, 'PNG', 5, yPos, imgWidth, imgHeight); // Adiciona a imagem da tabela
+        heightLeft -= (pageHeight - yPos); // Ajusta heightLeft com base na posição inicial da imagem
+        let currentImgPos = yPos - imgHeight; // Posição atual da imagem
+
+        while (heightLeft >= 0) {
+            pdf.addPage();
+            currentImgPos = -heightLeft;
+            pdf.addImage(imgData, 'PNG', 5, currentImgPos, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save('relatorio_leads.pdf');
+
         // Restaura os estilos e elementos visuais da página
-        controlsDiv.style.display = 'flex'; // ou 'block' dependendo de como você definiu
+        controlsDiv.style.display = 'flex'; 
         if (actionHeader) actionHeader.style.display = '';
         actionCells.forEach(cell => cell.style.display = '');
 
@@ -335,31 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
             input.style.color = '';
             input.style.minWidth = '';
         });
-        
-        document.body.style.backgroundColor = originalBgBody;
-        content.style.backgroundColor = originalBgContainer;
-        content.style.color = originalColorContainer;
-        periodDisplay.style.color = originalColorPeriod;
-
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' para retrato, 'mm' para unidades, 'a4' para tamanho
-        const imgWidth = 210; // Largura do A4 em mm
-        const pageHeight = 297; // Altura do A4 em mm
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= -1) { // Ajustado para garantir que a última parte seja incluída
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-
-        pdf.save('relatorio_leads.pdf');
     }
 
     // Event Listeners
@@ -370,10 +361,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carregar dados ao iniciar (se existirem) ou popular com as cidades iniciais
     loadData();
-
-    // Se mesmo após carregar do localStorage ainda não houver dados, adiciona as cidades iniciais.
-    // Isso cobre o caso de primeiro acesso ou localStorage vazio.
-    if (tableBody.children.length === 0) {
-        initialCities.forEach(city => addCityRow(city));
-    }
 });
