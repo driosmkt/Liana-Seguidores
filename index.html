@@ -13,24 +13,24 @@
     <div class="container" id="pdf-content">
         <h1>Relatório de Captação de Leads</h1>
         <div class="header-controls">
-            <label for="period-input">Período de Análise:</label>
-            <input type="text" id="period-input" value="01 a 31 de Julho de 2025" placeholder="Ex: 01/07/2025 a 31/07/2025">
+            <label>Período de Análise:</label>
+            <span id="period-display">01 a 31 de Julho de 2025</span>
         </div>
 
         <div class="table-container">
-            <table>
+            <table id="leads-table">
                 <thead>
                     <tr>
-                        <th>Cidade</th>
-                        <th>Período Campanha</th>
-                        <th>Contas Alcançadas</th>
-                        <th>Visitas ao Perfil</th>
-                        <th>Custo por Visita</th>
-                        <th>Valor Investido (R$)</th>
-                        <th class="sortable" data-sort="seguidoresNovos">Seguidores Novos</th>
-                        <th class="sortable" data-sort="seguidoresAtuais">Seguidores Atuais</th>
-                        <th class="sortable" data-sort="custoPorNovoSeguidor">Custo por Novo Seguidor (R$)</th>
-                        <th>Ações</th>
+                        <th style="width: 18%;">Cidade</th>
+                        <th style="width: 10%;">Período Campanha</th>
+                        <th style="width: 9%;">Contas Alcançadas</th>
+                        <th style="width: 9%;">Visitas ao Perfil</th>
+                        <th style="width: 9%;">Custo por Visita</th>
+                        <th style="width: 10%;">Valor Investido (R$)</th>
+                        <th class="sortable" data-sort="seguidoresNovos" style="width: 10%;">Seguidores Novos</th>
+                        <th class="sortable" data-sort="custoPorNovoSeguidor" style="width: 10%;">Custo por Novo Seguidor (R$)</th>
+                        <th class="sortable" data-sort="seguidoresAtuais" style="width: 9%;">Seguidores Atuais</th>
+                        <th style="width: 6%;">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="cities-table-body">
