@@ -1,0 +1,165 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #343A40; /* Dark Grey */
+    color: #f8f8f8; /* Light text color */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #495057; /* Slightly lighter dark grey for content area */
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    text-align: center;
+    color: #DC2626; /* Red from image */
+    margin-bottom: 25px;
+}
+
+.header-controls {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-controls label {
+    font-weight: bold;
+}
+
+.header-controls input[type="text"] {
+    padding: 8px;
+    border: 1px solid #6c757d;
+    border-radius: 4px;
+    background-color: #5a6268;
+    color: #f8f8f8;
+    width: 250px;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+table th, table td {
+    border: 1px solid #6c757d;
+    padding: 10px;
+    text-align: left;
+    white-space: nowrap; /* Prevent text wrapping in table cells */
+}
+
+table th {
+    background-color: #DC2626; /* Red from image */
+    color: white;
+    font-weight: bold;
+    cursor: pointer; /* Indicate sortable columns */
+}
+
+table th.sortable:hover {
+    background-color: #b01f1f; /* Darker red on hover */
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #5a6268; /* Alternate row color */
+}
+
+table tbody tr:hover {
+    background-color: #6c757d;
+}
+
+table input[type="text"],
+table input[type="number"] {
+    width: calc(100% - 10px); /* Adjust width for padding */
+    padding: 6px;
+    border: 1px solid #6c757d;
+    border-radius: 3px;
+    background-color: #5a6268;
+    color: #f8f8f8;
+}
+
+.controls {
+    text-align: center;
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.controls button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    color: white;
+}
+
+.controls button:hover {
+    opacity: 0.9;
+}
+
+#add-city-btn {
+    background-color: #D9940A; /* Gold/Orange from image */
+}
+
+#add-city-btn:hover {
+    background-color: #c08209;
+}
+
+#save-data-btn, #load-data-btn {
+    background-color: #007bff; /* Blue for save/load */
+}
+
+#save-data-btn:hover, #load-data-btn:hover {
+    background-color: #0056b3;
+}
+
+#generate-pdf-btn {
+    background-color: #DC2626; /* Red from image */
+}
+
+#generate-pdf-btn:hover {
+    background-color: #b01f1f;
+}
+
+.remove-btn {
+    background-color: #dc3545; /* Red for remove button */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.remove-btn:hover {
+    background-color: #c82333;
+}
+
+/* Cores condicionais para Seguidores Novos */
+.positive-change {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+
+.negative-change {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+
+.no-change {
+    background-color: #ffc107; /* Yellow */
+    color: #343A40;
+}
