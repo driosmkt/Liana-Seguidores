@@ -7,10 +7,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveDataBtn = document.getElementById('save-data-btn');
     const loadDataBtn = document.getElementById('load-data-btn');
     const generatePdfBtn = document.getElementById('generate-pdf-btn');
-    const periodInput = document.getElementById('period-input');
+    const periodDisplay = document.getElementById('period-display'); // Agora é um span
     const tableHeaders = document.querySelectorAll('th.sortable');
 
     let citiesData = [];
+
+    // Lista de cidades pré-definidas
+    const initialCities = [
+        { name: 'Petrolina, Pernambuco' },
+        { name: 'Jaboatão dos Guararapes, Pernambuco' },
+        { name: 'Olinda, Pernambuco' },
+        { name: 'Cabo de Santo Agostinho, Pernambuco' },
+        { name: 'Paulista, Pernambuco' },
+        { name: 'Camaragibe, Pernambuco' },
+        { name: 'Igarassu, Pernambuco' },
+        { name: 'São Lourenço da Mata, Pernambuco' },
+        { name: 'Gravatá, Pernambuco' },
+        { name: 'Moreno, Pernambuco' },
+        { name: 'Garanhuns, Pernambuco' },
+        { name: 'Abreu e Lima, Pernambuco' },
+        { name: 'Arcoverde, Pernambuco' },
+        { name: 'Caruaru, Pernambuco' },
+        { name: 'Vitória de Santo Antão, Pernambuco' },
+        { name: 'Recife, Pernambuco' }
+    ];
 
     // Função para adicionar uma nova linha à tabela
     function addCityRow(city = {}) {
@@ -23,13 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <td><input type="number" class="cost-per-visit" value="${city.costPerVisit || ''}" step="0.01" min="0"></td>
             <td><input type="number" class="invested-value" value="${city.investedValue || ''}" step="0.01" min="0"></td>
             <td><input type="number" class="new-followers" value="${city.newFollowers || ''}"></td>
-            <td><input type="number" class="current-followers" value="${city.currentFollowers || ''}" min="0"></td>
             <td class="calculated-cost-per-follower">${formatCurrency(city.costPerNewFollower)}</td>
+            <td><input type="number" class="current-followers" value="${city.currentFollowers || ''}" min="0"></td>
             <td><button class="remove-btn">Remover</button></td>
         `;
 
         // Adicionar listeners para cálculo e remoção
-        const inputs = newRow.querySelectorAll('input[type="number"]');
+        const inputs = newRow.querySelectorAll('input[type="number"], input[type="text"]');
         inputs.forEach(input => input.addEventListener('input', updateRowCalculation));
         newRow.querySelector('.remove-btn').addEventListener('click', () => removeCityRow(newRow));
 
@@ -48,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let costPerNewFollower = 0;
         if (newFollowers > 0) {
             costPerNewFollower = investedValue / newFollowers;
-        } else if (newFollowers < 0) { // Considerar custo infinito ou um valor negativo para perdas
-            costPerNewFollower = investedValue / newFollowers; // Custo negativo
+        } else if (newFollowers < 0) {
+            costPerNewFollower = investedValue / newFollowers; // Custo negativo para perdas
         } else { // newFollowers === 0
             costPerNewFollower = investedValue > 0 ? Infinity : 0; // Se investiu e não teve seguidor, custo infinito. Se não investiu, custo 0.
         }
@@ -81,12 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(value) || value === null) {
             return 'R$ 0,00';
         }
-        return `R$ ${value.toFixed(2).replace('.', ',')}`;
+        // Garante a formatação para o Brasil com vírgula para decimais
+        return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
 
     // Função para remover uma linha da tabela
     function removeCityRow(row) {
         row.remove();
+        saveData(); // Salva os dados automaticamente após remover uma linha
     }
 
     // Função para salvar dados no localStorage
@@ -119,15 +141,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         localStorage.setItem('citiesData', JSON.stringify(citiesData));
-        localStorage.setItem('periodOfAnalysis', periodInput.value);
+        // O período não é mais salvo pois é fixo, mas podemos salvar se for editável no futuro
+        // localStorage.setItem('periodOfAnalysis', periodDisplay.textContent); 
         alert('Dados salvos com sucesso!');
     }
 
     // Função para carregar dados do localStorage
     function loadData() {
         const savedData = localStorage.getItem('citiesData');
-        const savedPeriod = localStorage.getItem('periodOfAnalysis');
-
+        
         if (savedData) {
             citiesData = JSON.parse(savedData);
             tableBody.innerHTML = ''; // Limpa a tabela atual
@@ -135,34 +157,53 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Dados carregados com sucesso!');
         } else {
             alert('Nenhum dado salvo encontrado.');
+            // Se não houver dados salvos, carrega as cidades iniciais
+            tableBody.innerHTML = '';
+            initialCities.forEach(city => addCityRow(city));
         }
 
-        if (savedPeriod) {
-            periodInput.value = savedPeriod;
-        }
+        // O período de análise é fixo agora, não precisa carregar do localStorage
+        // const savedPeriod = localStorage.getItem('periodOfAnalysis');
+        // if (savedPeriod) {
+        //     periodDisplay.textContent = savedPeriod;
+        // }
     }
 
     // Função de ordenação
-    function sortTable(columnIndex, type) {
+    function sortTable(sortKey, type) {
         const rows = Array.from(tableBody.querySelectorAll('tr'));
-        const isAscending = tableHeaders[columnIndex].classList.contains('asc');
+        const table = document.getElementById('leads-table');
+        const headerIndex = Array.from(table.tHead.querySelector('tr').children).findIndex(th => th.dataset.sort === sortKey);
+        const isAscending = tableHeaders[headerIndex].classList.contains('asc');
 
         rows.sort((rowA, rowB) => {
             let valueA, valueB;
-
-            // Para custo por novo seguidor, remover "R$" e substituir "," por "."
-            if (type === 'currency') {
-                valueA = rowA.children[columnIndex].textContent.replace('R$ ', '').replace(',', '.');
-                valueB = rowB.children[columnIndex].textContent.replace('R$ ', '').replace(',', '.');
-                if (valueA === '∞') valueA = Infinity;
-                if (valueB === '∞') valueB = Infinity;
-                valueA = parseFloat(valueA);
-                valueB = parseFloat(valueB);
-            } else { // Para números inteiros (Seguidores Atuais, Seguidores Novos)
-                valueA = parseInt(rowA.children[columnIndex].querySelector('input').value) || 0;
-                valueB = parseInt(rowB.children[columnIndex].querySelector('input').value) || 0;
-            }
             
+            // Ajusta o índice da coluna para pegar o valor correto
+            let columnIndex;
+            switch(sortKey) {
+                case 'seguidoresNovos':
+                    columnIndex = 6; // Coluna de Seguidores Novos
+                    valueA = parseInt(rowA.children[columnIndex].querySelector('input').value) || 0;
+                    valueB = parseInt(rowB.children[columnIndex].querySelector('input').value) || 0;
+                    break;
+                case 'custoPorNovoSeguidor':
+                    columnIndex = 7; // Coluna de Custo por Novo Seguidor
+                    valueA = rowA.children[columnIndex].textContent.replace('R$ ', '').replace('.', '').replace(',', '.'); // Remove R$, . e troca , por .
+                    valueB = rowB.children[columnIndex].textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
+                    if (valueA === '∞') valueA = Infinity;
+                    if (valueB === '∞') valueB = Infinity;
+                    valueA = parseFloat(valueA);
+                    valueB = parseFloat(valueB);
+                    break;
+                case 'seguidoresAtuais':
+                    columnIndex = 8; // Coluna de Seguidores Atuais
+                    valueA = parseInt(rowA.children[columnIndex].querySelector('input').value) || 0;
+                    valueB = parseInt(rowB.children[columnIndex].querySelector('input').value) || 0;
+                    break;
+                default:
+                    return 0;
+            }
 
             if (isAscending) {
                 return valueA - valueB;
@@ -178,38 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Atualiza a classe de ordenação nos cabeçalhos
         tableHeaders.forEach(header => header.classList.remove('asc', 'desc'));
         if (isAscending) {
-            tableHeaders[columnIndex].classList.add('desc');
+            tableHeaders[headerIndex].classList.add('desc');
         } else {
-            tableHeaders[columnIndex].classList.add('asc');
+            tableHeaders[headerIndex].classList.add('asc');
         }
     }
 
     // Adiciona event listeners para os cabeçalhos de ordenação
-    tableHeaders.forEach((header, index) => {
+    tableHeaders.forEach((header) => {
         header.addEventListener('click', () => {
-            // Determine the column index for sorting based on data-sort attribute
             const sortKey = header.dataset.sort;
-            let colIndex;
-            let sortType = 'number';
-
-            switch(sortKey) {
-                case 'seguidoresNovos':
-                    colIndex = 6;
-                    break;
-                case 'seguidoresAtuais':
-                    colIndex = 7;
-                    break;
-                case 'custoPorNovoSeguidor':
-                    colIndex = 8;
-                    sortType = 'currency';
-                    break;
-                default:
-                    return; // Not a sortable column according to our logic
-            }
-            sortTable(colIndex, sortType);
+            sortTable(sortKey);
         });
     });
-
 
     // Função para gerar PDF
     async function generatePdf() {
@@ -217,16 +239,20 @@ document.addEventListener('DOMContentLoaded', () => {
         saveData();
 
         const content = document.getElementById('pdf-content');
-        const originalBg = document.body.style.backgroundColor; // Salva o background original
-        document.body.style.backgroundColor = 'white'; // Temporariamente muda para branco para o PDF
+        const originalBgBody = document.body.style.backgroundColor;
+        const originalBgContainer = content.style.backgroundColor;
+        const originalColorContainer = content.style.color;
+        const originalColorPeriod = periodDisplay.style.color;
 
-        // Adiciona um estilo para o PDF ser mais legível, se necessário (ex: mudar cor da fonte para preto)
-        // Isso pode ser mais complexo, html2canvas renderiza o que vê.
-        // Para a tabela, o CSS já deve dar conta.
-        
-        // Remove os botões de ação e a coluna de ações para o PDF
-        const removeButtons = document.querySelectorAll('.remove-btn');
-        removeButtons.forEach(btn => btn.style.display = 'none');
+        // Estilos temporários para o PDF
+        document.body.style.backgroundColor = 'white';
+        content.style.backgroundColor = 'white';
+        content.style.color = 'black';
+        periodDisplay.style.color = 'black';
+
+        // Oculta botões e a coluna de ações para o PDF
+        const controlsDiv = document.querySelector('.controls');
+        controlsDiv.style.display = 'none';
         const actionHeader = document.querySelector('th:last-child');
         if (actionHeader) actionHeader.style.display = 'none';
         const actionCells = document.querySelectorAll('td:last-child');
@@ -239,66 +265,81 @@ document.addEventListener('DOMContentLoaded', () => {
             input.style.border = 'none'; // Remove bordas
             input.style.backgroundColor = 'transparent'; // Remove background
             input.style.color = 'black'; // Garante texto preto no PDF
+            input.style.minWidth = '0'; // Evita largura mínima que force scroll
         });
         
-        // Garante que o período de análise é visível
-        periodInput.style.color = 'black';
-
-
         // Captura o conteúdo
         const canvas = await html2canvas(content, { 
             scale: 2, // Melhor qualidade
             useCORS: true, // Se houver imagens externas
             windowWidth: content.scrollWidth,
             windowHeight: content.scrollHeight,
-            onclone: (document) => {
-                // Aqui podemos fazer ajustes no DOM clonado antes de renderizar
-                // Ex: Garantir que o texto dos inputs aparece
-                const clonedInputs = document.getElementById('pdf-content').querySelectorAll('input');
+            onclone: (documentClone) => {
+                const clonedContent = documentClone.getElementById('pdf-content');
+                
+                // Aplica estilos para o clone para garantir o layout correto no PDF
+                documentClone.body.style.backgroundColor = 'white';
+                clonedContent.style.backgroundColor = 'white';
+                clonedContent.style.color = 'black';
+                
+                const clonedPeriodDisplay = documentClone.getElementById('period-display');
+                if (clonedPeriodDisplay) clonedPeriodDisplay.style.color = 'black';
+
+                const clonedH1 = documentClone.querySelector('h1');
+                if (clonedH1) clonedH1.style.color = '#DC2626'; // Mantém o título vermelho
+
+                const clonedControlsDiv = documentClone.querySelector('.controls');
+                if (clonedControlsDiv) clonedControlsDiv.style.display = 'none';
+                
+                const clonedActionHeader = clonedContent.querySelector('th:last-child');
+                if (clonedActionHeader) clonedActionHeader.style.display = 'none';
+                const clonedActionCells = clonedContent.querySelectorAll('td:last-child');
+                clonedActionCells.forEach(cell => cell.style.display = 'none');
+
+                const clonedInputs = clonedContent.querySelectorAll('input');
                 clonedInputs.forEach(input => {
-                    input.setAttribute('value', input.value);
                     input.style.border = 'none';
                     input.style.backgroundColor = 'transparent';
                     input.style.color = 'black';
+                    input.style.minWidth = '0';
                 });
-                // Esconde botões no clone
-                const clonedButtons = document.getElementById('pdf-content').querySelectorAll('.controls button');
-                clonedButtons.forEach(btn => btn.style.display = 'none');
-                
-                const clonedActionHeader = document.getElementById('pdf-content').querySelector('th:last-child');
-                if (clonedActionHeader) clonedActionHeader.style.display = 'none';
-                const clonedActionCells = document.getElementById('pdf-content').querySelectorAll('td:last-child');
-                clonedActionCells.forEach(cell => cell.style.display = 'none');
 
-                // Garante que o período de análise é visível
-                const clonedPeriodInput = document.getElementById('pdf-content').querySelector('#period-input');
-                if (clonedPeriodInput) clonedPeriodInput.style.color = 'black';
+                // Assegura que as cores condicionais sejam mantidas, mas o texto seja preto ou branco legível
+                const clonedNewFollowersInputs = clonedContent.querySelectorAll('.new-followers');
+                clonedNewFollowersInputs.forEach(input => {
+                    if (input.classList.contains('positive-change') || input.classList.contains('negative-change')) {
+                        input.style.color = 'white'; // Se o background for verde/vermelho, texto branco
+                    } else if (input.classList.contains('no-change')) {
+                        input.style.color = 'black'; // Se o background for amarelo, texto preto
+                    }
+                });
 
-                // Altera o background do corpo no clone
-                document.body.style.backgroundColor = 'white';
-                const clonedContainer = document.getElementById('pdf-content');
-                if (clonedContainer) {
-                    clonedContainer.style.backgroundColor = 'white';
-                    clonedContainer.style.color = 'black'; // Garante texto preto no container
-                }
-                 const clonedH1 = document.getElementById('pdf-content').querySelector('h1');
-                 if (clonedH1) clonedH1.style.color = '#DC2626'; // Mantém o título vermelho
+                // Esconde a barra de rolagem horizontal se ainda aparecer no clone
+                const clonedTableContainer = clonedContent.querySelector('.table-container');
+                if (clonedTableContainer) clonedTableContainer.style.overflowX = 'hidden';
+
+                // Força a largura da tabela para o clone
+                const clonedTable = clonedContent.querySelector('#leads-table');
+                if (clonedTable) clonedTable.style.width = '100%';
             }
         });
 
-        // Restaura as exibições dos botões e colunas
-        removeButtons.forEach(btn => btn.style.display = '');
+        // Restaura os estilos e elementos visuais da página
+        controlsDiv.style.display = 'flex'; // ou 'block' dependendo de como você definiu
         if (actionHeader) actionHeader.style.display = '';
         actionCells.forEach(cell => cell.style.display = '');
 
-        // Restaura os estilos dos inputs
         inputsToConvert.forEach(input => {
             input.style.border = '';
             input.style.backgroundColor = '';
             input.style.color = '';
+            input.style.minWidth = '';
         });
-        periodInput.style.color = '';
-        document.body.style.backgroundColor = originalBg; // Restaura o background original
+        
+        document.body.style.backgroundColor = originalBgBody;
+        content.style.backgroundColor = originalBgContainer;
+        content.style.color = originalColorContainer;
+        periodDisplay.style.color = originalColorPeriod;
 
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' para retrato, 'mm' para unidades, 'a4' para tamanho
@@ -311,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
-        while (heightLeft >= 0) {
+        while (heightLeft >= -1) { // Ajustado para garantir que a última parte seja incluída
             position = heightLeft - imgHeight;
             pdf.addPage();
             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -327,11 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDataBtn.addEventListener('click', loadData);
     generatePdfBtn.addEventListener('click', generatePdf);
 
-    // Carregar dados ao iniciar (se existirem)
+    // Carregar dados ao iniciar (se existirem) ou popular com as cidades iniciais
     loadData();
 
-    // Adiciona uma linha vazia se não houver dados carregados
-    if (citiesData.length === 0) {
-        addCityRow();
+    // Se mesmo após carregar do localStorage ainda não houver dados, adiciona as cidades iniciais.
+    // Isso cobre o caso de primeiro acesso ou localStorage vazio.
+    if (tableBody.children.length === 0) {
+        initialCities.forEach(city => addCityRow(city));
     }
 });
