@@ -7,7 +7,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1200px; /* Mantém um max-width para controle */
     margin: 0 auto;
     background-color: #495057; /* Slightly lighter dark grey for content area */
     padding: 25px;
@@ -32,17 +32,18 @@ h1 {
     font-weight: bold;
 }
 
-.header-controls input[type="text"] {
+#period-display {
     padding: 8px;
     border: 1px solid #6c757d;
     border-radius: 4px;
     background-color: #5a6268;
     color: #f8f8f8;
-    width: 250px;
+    min-width: 200px;
+    text-align: center;
 }
 
 .table-container {
-    overflow-x: auto;
+    overflow-x: hidden; /* Garante que não haverá scroll horizontal aqui */
     margin-bottom: 20px;
 }
 
@@ -50,13 +51,15 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    table-layout: fixed; /* Ajuda a controlar as larguras das colunas */
 }
 
 table th, table td {
     border: 1px solid #6c757d;
-    padding: 10px;
+    padding: 8px 5px; /* Reduzi o padding para otimizar espaço */
     text-align: left;
-    white-space: nowrap; /* Prevent text wrapping in table cells */
+    word-wrap: break-word; /* Permite que o texto quebre dentro das células */
+    vertical-align: top; /* Alinha o conteúdo ao topo da célula */
 }
 
 table th {
@@ -64,6 +67,7 @@ table th {
     color: white;
     font-weight: bold;
     cursor: pointer; /* Indicate sortable columns */
+    white-space: normal; /* Permite que o texto do cabeçalho quebre */
 }
 
 table th.sortable:hover {
@@ -80,13 +84,23 @@ table tbody tr:hover {
 
 table input[type="text"],
 table input[type="number"] {
-    width: calc(100% - 10px); /* Adjust width for padding */
-    padding: 6px;
+    width: calc(100% - 10px); /* Ajusta largura para padding */
+    padding: 5px; /* Reduzi o padding dos inputs */
     border: 1px solid #6c757d;
     border-radius: 3px;
     background-color: #5a6268;
     color: #f8f8f8;
+    box-sizing: border-box; /* Garante que padding e borda não aumentem a largura total */
 }
+
+/* Reduz o tamanho da fonte para as células de dados se necessário para caber */
+table td {
+    font-size: 14px;
+}
+table input {
+    font-size: 14px;
+}
+
 
 .controls {
     text-align: center;
@@ -94,14 +108,15 @@ table input[type="number"] {
     display: flex;
     justify-content: center;
     gap: 15px;
+    flex-wrap: wrap; /* Permite que os botões quebrem linha em telas pequenas */
 }
 
 .controls button {
-    padding: 10px 20px;
+    padding: 10px 15px; /* Ajustei o padding dos botões */
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px; /* Ajustei o tamanho da fonte dos botões */
     transition: background-color 0.3s ease;
     color: white;
 }
@@ -138,10 +153,10 @@ table input[type="number"] {
     background-color: #dc3545; /* Red for remove button */
     color: white;
     border: none;
-    padding: 5px 10px;
+    padding: 5px 8px; /* Ajustei o padding do botão remover */
     border-radius: 3px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px; /* Ajustei o tamanho da fonte */
 }
 
 .remove-btn:hover {
@@ -162,4 +177,9 @@ table input[type="number"] {
 .no-change {
     background-color: #ffc107; /* Yellow */
     color: #343A40;
+}
+
+/* Estilo para Infinity (R$ ∞) no PDF, garantindo que não quebre */
+.calculated-cost-per-follower {
+    white-space: nowrap;
 }
