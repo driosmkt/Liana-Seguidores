@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Captação de Leads</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Bibliotecas para Gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container" id="pdf-content">
+        <h1>Relatório de Captação de Leads</h1>
+        <div class="header-controls">
+            <label for="period-input">Período de Análise:</label>
+            <input type="text" id="period-input" value="01 a 31 de Julho de 2025" placeholder="Ex: 01/07/2025 a 31/07/2025">
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cidade</th>
+                        <th>Período Campanha</th>
+                        <th>Contas Alcançadas</th>
+                        <th>Visitas ao Perfil</th>
+                        <th>Custo por Visita</th>
+                        <th>Valor Investido (R$)</th>
+                        <th class="sortable" data-sort="seguidoresNovos">Seguidores Novos</th>
+                        <th class="sortable" data-sort="seguidoresAtuais">Seguidores Atuais</th>
+                        <th class="sortable" data-sort="custoPorNovoSeguidor">Custo por Novo Seguidor (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="cities-table-body">
+                    <!-- Linhas das cidades serão adicionadas aqui pelo JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="controls">
+            <button id="add-city-btn" class="gold-button">Adicionar Nova Cidade</button>
+            <button id="save-data-btn">Salvar Dados</button>
+            <button id="load-data-btn">Carregar Dados</button>
+            <button id="generate-pdf-btn" class="red-button">Gerar PDF</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
