@@ -6,40 +6,45 @@ body {
     color: #f8f8f8; /* Light text color */
 }
 
-.container {
-    max-width: 1200px; /* Mantém um max-width para controle */
-    margin: 0 auto;
-    background-color: #495057; /* Slightly lighter dark grey for content area */
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-h1 {
+#main-title {
     text-align: center;
-    color: #DC2626; /* Red from image */
-    margin-bottom: 25px;
+    color: #D9940A; /* Gold/Orange from image */
+    margin-bottom: 20px;
+    font-size: 2.5em; /* Tamanho maior para o título principal */
 }
 
-.header-controls {
-    margin-bottom: 20px;
+.header-info {
+    text-align: center;
+    margin-bottom: 25px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
 }
 
-.header-controls label {
+.header-info label {
     font-weight: bold;
+    font-size: 1.1em;
 }
 
 #period-display {
-    padding: 8px;
+    padding: 8px 12px;
     border: 1px solid #6c757d;
     border-radius: 4px;
     background-color: #5a6268;
     color: #f8f8f8;
     min-width: 200px;
     text-align: center;
+    font-size: 1.1em;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #495057; /* Slightly lighter dark grey for content area */
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .table-container {
