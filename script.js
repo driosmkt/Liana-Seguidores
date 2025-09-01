@@ -7,31 +7,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveDataBtn = document.getElementById('save-data-btn');
     const loadDataBtn = document.getElementById('load-data-btn');
     const generatePdfBtn = document.getElementById('generate-pdf-btn');
-    const periodDisplay = document.getElementById('period-display'); // Agora é um span
-    const mainTitle = document.getElementById('main-title'); // Novo: Título principal
-    const reportContentForPdf = document.getElementById('report-content-for-pdf'); // Elemento a ser capturado por html2canvas
+    const periodDisplay = document.getElementById('period-display');
+    const mainTitle = document.getElementById('main-title');
+    const reportContentForPdf = document.getElementById('report-content-for-pdf');
     const tableHeaders = document.querySelectorAll('th.sortable');
 
     let citiesData = [];
 
-    // Lista de cidades pré-definidas
+    // Lista de cidades pré-definidas na nova ordem
     const initialCities = [
-        { name: 'Petrolina, Pernambuco' },
+        { name: 'Recife, Pernambuco' },
         { name: 'Jaboatão dos Guararapes, Pernambuco' },
         { name: 'Olinda, Pernambuco' },
-        { name: 'Cabo de Santo Agostinho, Pernambuco' },
         { name: 'Paulista, Pernambuco' },
+        { name: 'Caruaru, Pernambuco' },
         { name: 'Camaragibe, Pernambuco' },
-        { name: 'Igarassu, Pernambuco' },
+        { name: 'Cabo de Santo Agostinho, Pernambuco' },
+        { name: 'Petrolina, Pernambuco' },
         { name: 'São Lourenço da Mata, Pernambuco' },
+        { name: 'Garanhuns, Pernambuco' },
+        { name: 'Vitória de Santo Antão, Pernambuco' },
+        { name: 'Igarassu, Pernambuco' },
+        { name: 'Abreu e Lima, Pernambuco' },
         { name: 'Gravatá, Pernambuco' },
         { name: 'Moreno, Pernambuco' },
-        { name: 'Garanhuns, Pernambuco' },
-        { name: 'Abreu e Lima, Pernambuco' },
-        { name: 'Arcoverde, Pernambuco' },
-        { name: 'Caruaru, Pernambuco' },
-        { name: 'Vitória de Santo Antão, Pernambuco' },
-        { name: 'Recife, Pernambuco' }
+        { name: 'Arcoverde, Pernambuco' }
     ];
 
     // Função para adicionar uma nova linha à tabela
@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRow = tableBody.insertRow();
         newRow.innerHTML = `
             <td><input type="text" class="city-name" value="${city.name || ''}" placeholder="Nome da Cidade, Estado"></td>
-            <td><input type="text" class="campaign-period" value="${city.campaignPeriod || ''}" placeholder="Ex: 01-15 Ago"></td>
             <td><input type="number" class="accounts-reached" value="${city.accountsReached || ''}" min="0"></td>
             <td><input type="number" class="profile-visits" value="${city.profileVisits || ''}" min="0"></td>
             <td><input type="number" class="cost-per-visit" value="${city.costPerVisit || ''}" step="0.01" min="0"></td>
@@ -131,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return {
                 name: row.querySelector('.city-name').value,
-                campaignPeriod: row.querySelector('.campaign-period').value,
+                // campaignPeriod: row.querySelector('.campaign-period').value, // Removido
                 accountsReached: parseInt(row.querySelector('.accounts-reached').value) || 0,
                 profileVisits: parseInt(row.querySelector('.profile-visits').value) || 0,
                 costPerVisit: parseFloat(row.querySelector('.cost-per-visit').value) || 0,
@@ -173,16 +172,16 @@ document.addEventListener('DOMContentLoaded', () => {
         rows.sort((rowA, rowB) => {
             let valueA, valueB;
             
-            // Ajusta o índice da coluna para pegar o valor correto
+            // Ajusta o índice da coluna para pegar o valor correto (ajustado após remover "Período Campanha")
             let columnIndex;
             switch(sortKey) {
                 case 'seguidoresNovos':
-                    columnIndex = 6; // Coluna de Seguidores Novos
+                    columnIndex = 5; // Nova coluna de Seguidores Novos
                     valueA = parseInt(rowA.children[columnIndex].querySelector('input').value) || 0;
                     valueB = parseInt(rowB.children[columnIndex].querySelector('input').value) || 0;
                     break;
                 case 'custoPorNovoSeguidor':
-                    columnIndex = 7; // Coluna de Custo por Novo Seguidor
+                    columnIndex = 6; // Nova coluna de Custo por Novo Seguidor
                     valueA = rowA.children[columnIndex].textContent.replace('R$ ', '').replace('.', '').replace(',', '.'); // Remove R$, . e troca , por .
                     valueB = rowB.children[columnIndex].textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
                     if (valueA === '∞') valueA = Infinity;
@@ -191,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     valueB = parseFloat(valueB);
                     break;
                 case 'seguidoresAtuais':
-                    columnIndex = 8; // Coluna de Seguidores Atuais
+                    columnIndex = 7; // Nova coluna de Seguidores Atuais
                     valueA = parseInt(rowA.children[columnIndex].querySelector('input').value) || 0;
                     valueB = parseInt(rowB.children[columnIndex].querySelector('input').value) || 0;
                     break;
@@ -331,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         heightLeft -= (pageHeight - yPos); // Ajusta heightLeft com base na posição inicial da imagem
         let currentImgPos = yPos - imgHeight; // Posição atual da imagem
 
-        while (heightLeft >= 0) {
+        while (heightLeft >= -1) { // Ajustado para garantir que a última parte seja incluída
             pdf.addPage();
             currentImgPos = -heightLeft;
             pdf.addImage(imgData, 'PNG', 5, currentImgPos, imgWidth, imgHeight);
@@ -361,4 +360,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carregar dados ao iniciar (se existirem) ou popular com as cidades iniciais
     loadData();
-});
+});```
+
+---
+
+### Como usar (mesmo processo):
+
+1.  **Crie uma nova pasta** no seu computador.
+2.  Dentro dessa pasta, crie três arquivos e salve o código correspondente em cada um:
+    *   `index.html`
+    *   `style.css`
+    *   `script.js`
+3.  **Abra o arquivo `index.html`** no seu navegador (Chrome, Firefox, Edge, etc.).
+
+Agora a planilha deve estar com as cidades na ordem correta, sem a coluna "Período Campanha", com o período de análise no título atualizado e com os ajustes de largura para melhor visibilidade. O PDF também refletirá essas mudanças.
+
+Por favor, teste novamente e me diga se há mais algum ajuste!
